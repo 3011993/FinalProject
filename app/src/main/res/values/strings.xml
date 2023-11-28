@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">FinalProject</string>
+    <string name="network_error">unknown error occurred</string>
+    <string name="invalid_login">Please Log In</string>
+    <string name="Io_exception">Please check your connection</string>
+
+</resources>
