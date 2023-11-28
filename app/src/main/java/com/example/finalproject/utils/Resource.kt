@@ -9,19 +9,28 @@ const val NO_INTERNET_CONNECTION = 404
 const val FAILED_CONNECTION = 22
 const val INVALID_LOGIN_ERROR = 112
 
-sealed class Resources<T>(val data: T? = null, val errorCode: Int? = 0, val error: String? = "") {
+sealed class Resources<T>(val data: T? = null, val exception: ExceptionResource? = null) {
     class Success<T>(data: T?) : Resources<T>(data)
-    class Error<T>(errorCode: Int? = 0, error: String? = "") :
-        Resources<T>(errorCode = errorCode, error = error)
+    class Error<T>(exception: ExceptionResource) :
+        Resources<T>(exception = exception)
 
 }
 
-fun <T> handleError(exception: Exception): Resources<T> {
-    return if (exception is IOException) {
-        Resources.Error<T>(errorCode = NO_INTERNET_CONNECTION, error = null)
-    } else if (exception is HttpException) {
-        Resources.Error<T>(errorCode = FAILED_CONNECTION, error = null)
-    } else {
-        Resources.Error<T>(errorCode = INVALID_LOGIN_ERROR, error = null)
+fun <T> handleError(exception: ExceptionResource): Resources<T> {
+    return when (exception) {
+        is ExceptionResource.IoException -> {
+            Resources.Error<T>(
+                exception = ExceptionResource.IoException(
+                    errorCode = NO_INTERNET_CONNECTION,
+                    error = ""
+                )
+            )
+        }
+        is ExceptionResource.NetworkError -> {
+            Resources.Error<T>(exception = ExceptionResource.NetworkError(errorCode = FAILED_CONNECTION))
+        }
+        else -> {
+            Resources.Error<T>(exception = ExceptionResource.InvalidLogin(errorCode = INVALID_LOGIN_ERROR))
+        }
     }
 }

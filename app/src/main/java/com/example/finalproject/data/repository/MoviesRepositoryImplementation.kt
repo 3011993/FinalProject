@@ -4,6 +4,9 @@ import com.example.finalproject.data.remote.ApiService
 import com.example.finalproject.data.remote.toMovieModel
 import com.example.finalproject.domain.models.MoviesModel
 import com.example.finalproject.domain.repository.MoviesRepository
+import com.example.finalproject.utils.ExceptionResource
+import com.example.finalproject.utils.FAILED_CONNECTION
+import com.example.finalproject.utils.INVALID_LOGIN_ERROR
 import com.example.finalproject.utils.Resources
 import com.example.finalproject.utils.handleError
 import kotlinx.coroutines.flow.Flow
@@ -21,11 +24,31 @@ class MoviesRepositoryImplementation(private val api: ApiService) : MoviesReposi
                 val moviesList = response.body()
                 emit(Resources.Success<List<MoviesModel>>(moviesList?.map { it.toMovieModel() }))
             } catch (exception: HttpException) {
-                handleError<List<MoviesModel>>(exception)
+                emit(
+                    Resources.Error<List<MoviesModel>>(
+                        exception = ExceptionResource.NetworkError(
+                            exception.code()
+                        )
+                    )
+                )
             } catch (exception: IOException) {
-                handleError<List<MoviesModel>>(exception)
+                emit(
+                    Resources.Error<List<MoviesModel>>(
+                        exception = ExceptionResource.IoException(
+                            FAILED_CONNECTION,
+                            exception.message ?: ""
+                        )
+                    )
+                )
+
             } catch (exception: Exception) {
-                handleError<List<MoviesModel>>(exception)
+                emit(
+                    Resources.Error<List<MoviesModel>>(
+                        exception = ExceptionResource.InvalidLogin(
+                            INVALID_LOGIN_ERROR
+                        )
+                    )
+                )
 
             }
         }
