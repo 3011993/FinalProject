@@ -2,7 +2,10 @@ package com.example.finalproject.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
 import androidx.lifecycle.lifecycleScope
 import com.example.finalproject.R
 import com.example.finalproject.databinding.ActivityMainBinding
@@ -16,11 +19,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-
-        moviesViewModel.movies.observe(this){
-
+        moviesViewModel = ViewModelProvider(this)[MoviesViewModel::class.java]
+        moviesViewModel.movies.observe(this) { state ->
+            when (state) {
+                is UiState.UiModel -> {
+                    Toast.makeText(this, "we got data right", Toast.LENGTH_SHORT).show()
+                }
+                is UiState.InvalidModel -> {
+                    Toast.makeText(this, "we got errors", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
-
         lifecycleScope.launch {
             moviesViewModel.showError.collectLatest { value ->
                 Snackbar.make(
@@ -30,6 +39,5 @@ class MainActivity : AppCompatActivity() {
                 ).show()
             }
         }
-
     }
 }

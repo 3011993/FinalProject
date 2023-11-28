@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.example.finalproject.R
 import com.example.finalproject.domain.models.MoviesModel
@@ -26,31 +27,32 @@ class MoviesViewModel(
     private val _showError = MutableStateFlow<String>("")
     val showError = _showError.asStateFlow()
 
-    private val _movies = MutableLiveData<List<MoviesModel>>()
-    val movies: LiveData<List<MoviesModel>>
+    private val _movies = MutableLiveData<UiState>()
+    val movies: LiveData<UiState>
         get() = _movies
 
+    init {
+        getAllMovies()
+    }
 
-    fun getAllMovies() {
+    private fun getAllMovies() {
         viewModelScope.launch {
             getAllMoviesUseCase().collect { result ->
                 when (result) {
                     is Resources.Success -> {
-                        _movies.value = result.data
+                        _movies.map { UiState.UiModel(result.data ?: emptyList()) }
                     }
-
                     is Resources.Error -> {
                         when (result.errorCode) {
                             INVALID_LOGIN_ERROR -> {
-                                _showError.value = application.getString(R.string.invalid_login)
+                                _movies.map { UiState.InvalidModel(application.getString(R.string.invalid_login)) }
                             }
-
                             NO_INTERNET_CONNECTION -> {
-                                _showError.value = result.error ?: ""
+                                _movies.map { UiState.InvalidModel(result.error ?: "") }
                             }
 
                             FAILED_CONNECTION -> {
-                                _showError.value = application.getString(R.string.network_error)
+                                _movies.map { UiState.InvalidModel(application.getString(R.string.network_error)) }
                             }
                         }
                     }
