@@ -7,10 +7,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.example.finalproject.R
+import com.example.finalproject.domain.models.MoviesModel
 import com.example.finalproject.domain.use_cases.GetAllMoviesUseCase
 import com.example.finalproject.utils.ExceptionResource
 import com.example.finalproject.utils.Resources
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
@@ -19,11 +23,11 @@ class MoviesViewModel(
     private val application: Application
 ) : AndroidViewModel(application) {
 
-    private val _showError = MutableStateFlow<String>("")
-    val showError = _showError.asStateFlow()
+    private val _errorEvent = MutableSharedFlow<UiState>()
+    val errorEvent = _errorEvent.asSharedFlow()
 
-    private val _movies = MutableLiveData<UiState>()
-    val movies: LiveData<UiState>
+    private val _movies = MutableStateFlow<List<MoviesModel>>(emptyList())
+    val movies: StateFlow<List<MoviesModel>>
         get() = _movies
 
     init {
@@ -35,23 +39,20 @@ class MoviesViewModel(
             getAllMoviesUseCase().collect { result ->
                 when (result) {
                     is Resources.Success -> {
-                        _movies.map { UiState.UiModel(result.data ?: emptyList()) }
+                        _movies.emit(result.data?: emptyList())
                     }
 
                     is Resources.Error -> {
                         when (result.exception) {
                             is ExceptionResource.InvalidLogin -> {
-                                _movies.map { UiState.InvalidModel(application.getString(R.string.invalid_login)) }
+                                _errorEvent.emit(UiState.InvalidLogin)
                             }
-
                             is ExceptionResource.IoException -> {
-                                _movies.map { UiState.InvalidModel(result.exception.error ?: "") }
+                                _errorEvent.emit(UiState.IoException(error = result.exception.error))
                             }
-
                             is ExceptionResource.NetworkError -> {
-                                _movies.map { UiState.InvalidModel(application.getString(R.string.network_error)) }
+                                _errorEvent.emit(UiState.NetworkError)
                             }
-
                             else -> {}
                         }
                     }

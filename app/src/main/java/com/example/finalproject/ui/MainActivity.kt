@@ -2,10 +2,9 @@ package com.example.finalproject.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Log
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.get
 import androidx.lifecycle.lifecycleScope
 import com.example.finalproject.R
 import com.example.finalproject.databinding.ActivityMainBinding
@@ -20,23 +19,39 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         moviesViewModel = ViewModelProvider(this)[MoviesViewModel::class.java]
-        moviesViewModel.movies.observe(this) { state ->
-            when (state) {
-                is UiState.UiModel -> {
-                    Toast.makeText(this, "we got data right", Toast.LENGTH_SHORT).show()
-                }
-                is UiState.InvalidModel -> {
-                    Toast.makeText(this, "we got errors", Toast.LENGTH_SHORT).show()
-                }
+
+        lifecycleScope.launch {
+            moviesViewModel.movies.collect { movies ->
+                //Todo submit movies to adapter list
+                Log.i("movies", "${movies.size}")
             }
         }
         lifecycleScope.launch {
-            moviesViewModel.showError.collectLatest { value ->
-                Snackbar.make(
-                    binding.root,
-                    value,
-                    Snackbar.LENGTH_LONG
-                ).show()
+            moviesViewModel.errorEvent.collectLatest { state ->
+                when(state) {
+                    is UiState.NetworkError -> {
+                        Snackbar.make(
+                            binding.root,
+                            getString(R.string.network_error),
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                    is UiState.InvalidLogin -> {
+                        Snackbar.make(
+                            binding.root,
+                            getString(R.string.invalid_login),
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                    is UiState.IoException -> {
+                        Snackbar.make(
+                            binding.root,
+                            state.error,
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                }
+
             }
         }
     }
