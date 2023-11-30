@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
                         ).show()
                     }
                     is UiState.InvalidLogin -> {
+                        //Todo log out and navigate to home screen
                         Snackbar.make(
                             binding.root,
                             getString(R.string.invalid_login),
