@@ -1,4 +1,4 @@
-package com.example.finalproject.utils
+package com.example.finalproject.data.utils
 
 sealed class ExceptionResource  {
     data class NetworkError(val errorCode : Int) : ExceptionResource()

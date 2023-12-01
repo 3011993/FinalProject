@@ -1,8 +1,4 @@
-package com.example.finalproject.utils
-
-import retrofit2.HttpException
-import java.io.IOException
-import java.lang.Exception
+package com.example.finalproject.data.utils
 
 
 const val NO_INTERNET_CONNECTION = 404
@@ -11,6 +7,7 @@ const val INVALID_LOGIN_ERROR = 112
 
 sealed class Resources<T>(val data: T? = null, val exception: ExceptionResource? = null) {
     class Success<T>(data: T?) : Resources<T>(data)
+    class Loading<T> : Resources<T>()
     class Error<T>(exception: ExceptionResource) :
         Resources<T>(exception = exception)
 

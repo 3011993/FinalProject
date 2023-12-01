@@ -27,8 +27,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
         lifecycleScope.launch {
-            moviesViewModel.errorEvent.collectLatest { state ->
+            moviesViewModel.state.collectLatest { state ->
                 when(state) {
+                    is UiState.Loading -> {
+                        //Todo show circular loading view
+                    }
                     is UiState.NetworkError -> {
                         Snackbar.make(
                             binding.root,
@@ -52,7 +55,6 @@ class MainActivity : AppCompatActivity() {
                         ).show()
                     }
                 }
-
             }
         }
     }

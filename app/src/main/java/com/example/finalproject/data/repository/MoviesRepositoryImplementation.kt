@@ -4,11 +4,10 @@ import com.example.finalproject.data.remote.ApiService
 import com.example.finalproject.data.remote.toMovieModel
 import com.example.finalproject.domain.models.MoviesModel
 import com.example.finalproject.domain.repository.MoviesRepository
-import com.example.finalproject.utils.ExceptionResource
-import com.example.finalproject.utils.FAILED_CONNECTION
-import com.example.finalproject.utils.INVALID_LOGIN_ERROR
-import com.example.finalproject.utils.Resources
-import com.example.finalproject.utils.handleError
+import com.example.finalproject.data.utils.ExceptionResource
+import com.example.finalproject.data.utils.FAILED_CONNECTION
+import com.example.finalproject.data.utils.INVALID_LOGIN_ERROR
+import com.example.finalproject.data.utils.Resources
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
@@ -20,6 +19,7 @@ class MoviesRepositoryImplementation(private val api: ApiService) : MoviesReposi
     override suspend fun getAllMovies(): Flow<Resources<List<MoviesModel>>> {
         return flow {
             try {
+                emit(Resources.Loading<List<MoviesModel>>())
                 val response = api.getAllMovies()
                 val moviesList = response.body()
                 emit(Resources.Success<List<MoviesModel>>(moviesList?.map { it.toMovieModel() }))
@@ -49,7 +49,6 @@ class MoviesRepositoryImplementation(private val api: ApiService) : MoviesReposi
                         )
                     )
                 )
-
             }
         }
     }
