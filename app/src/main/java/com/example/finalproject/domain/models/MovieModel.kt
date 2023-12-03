@@ -1,6 +1,6 @@
 package com.example.finalproject.domain.models
 
-data class MoviesModel(
+data class MovieModel(
     val movieId : String,
     val movie : String
 )

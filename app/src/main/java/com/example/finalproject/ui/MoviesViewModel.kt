@@ -1,9 +1,7 @@
 package com.example.finalproject.ui
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.finalproject.domain.models.MoviesModel
 import com.example.finalproject.domain.use_cases.GetAllMoviesUseCase
 import com.example.finalproject.data.utils.ExceptionResource
 import com.example.finalproject.data.utils.Resources
@@ -15,14 +13,13 @@ import kotlinx.coroutines.launch
 
 class MoviesViewModel(
     private val getAllMoviesUseCase: GetAllMoviesUseCase,
-    private val application: Application
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
     private val _state = MutableSharedFlow<UiState>()
     val state = _state.asSharedFlow()
 
-    private val _movies = MutableStateFlow<List<MoviesModel>>(emptyList())
-    val movies: StateFlow<List<MoviesModel>>
+    private val _movies = MutableStateFlow<UiModel>(UiModel.Loading)
+    val movies: StateFlow<UiModel>
         get() = _movies
 
     init {
@@ -34,10 +31,10 @@ class MoviesViewModel(
             getAllMoviesUseCase().collect { result ->
                 when (result) {
                     is Resources.Success -> {
-                        _movies.emit(result.data?: emptyList())
+                        _movies.emit(UiModel.MoviesModel(result.data?: emptyList()))
                     }
                     is Resources.Loading -> {
-                        _state.emit(UiState.Loading)
+                        _movies.emit(UiModel.Loading)
                     }
                     is Resources.Error -> {
                         when (result.exception) {

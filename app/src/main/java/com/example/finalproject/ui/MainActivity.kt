@@ -23,15 +23,21 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             moviesViewModel.movies.collect { movies ->
                 //Todo submit movies to adapter list
-                Log.i("movies", "${movies.size}")
+                when (movies) {
+                    is UiModel.MoviesModel -> {
+                        Log.i("movies", "${movies.data?.size}")
+                    }
+
+                    is UiModel.Loading -> {
+                        //Todo show circular loading view
+
+                    }
+                }
             }
         }
         lifecycleScope.launch {
             moviesViewModel.state.collectLatest { state ->
-                when(state) {
-                    is UiState.Loading -> {
-                        //Todo show circular loading view
-                    }
+                when (state) {
                     is UiState.NetworkError -> {
                         Snackbar.make(
                             binding.root,
@@ -39,6 +45,7 @@ class MainActivity : AppCompatActivity() {
                             Snackbar.LENGTH_LONG
                         ).show()
                     }
+
                     is UiState.InvalidLogin -> {
                         //Todo log out and navigate to home screen
                         Snackbar.make(
@@ -47,6 +54,7 @@ class MainActivity : AppCompatActivity() {
                             Snackbar.LENGTH_LONG
                         ).show()
                     }
+
                     is UiState.IoException -> {
                         Snackbar.make(
                             binding.root,
